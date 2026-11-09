@@ -1,0 +1,48 @@
+{
+  "name": "validation_failed",
+  "description": "A 400 is not retried.",
+  "call": {
+    "product": "instant_snap",
+    "method": "capture",
+    "options": {
+      "url": "https://example.com"
+    }
+  },
+  "expect_requests": [
+    {
+      "method": "POST",
+      "path": "/instant-snap/v1/captures",
+      "headers": {
+        "X-Api-Key": "wsw_api_000000000000_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "Content-Type": "application/json"
+      },
+      "idempotency_key": "same",
+      "body": {
+        "url": "https://example.com",
+        "response_type": "json"
+      }
+    }
+  ],
+  "responses": [
+    {
+      "status": 400,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "success": false,
+        "error_code": "validation_failed",
+        "error_message": "\"viewport.width\" must be between 250 and 7680.",
+        "retry_after_seconds": null
+      }
+    }
+  ],
+  "expect": {
+    "error": {
+      "kind": "invalid_request",
+      "error_code": "validation_failed",
+      "http_status": 400,
+      "message": "\"viewport.width\" must be between 250 and 7680."
+    }
+  }
+}

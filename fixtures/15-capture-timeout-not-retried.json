@@ -1,0 +1,47 @@
+{
+  "name": "capture_timeout_not_retried",
+  "description": "Too slow: not retried.",
+  "call": {
+    "product": "instant_snap",
+    "method": "capture",
+    "options": {
+      "url": "https://example.com"
+    }
+  },
+  "expect_requests": [
+    {
+      "method": "POST",
+      "path": "/instant-snap/v1/captures",
+      "headers": {
+        "X-Api-Key": "wsw_api_000000000000_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "Content-Type": "application/json"
+      },
+      "idempotency_key": "same",
+      "body": {
+        "url": "https://example.com",
+        "response_type": "json"
+      }
+    }
+  ],
+  "responses": [
+    {
+      "status": 504,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "success": false,
+        "error_code": "capture_timeout",
+        "error_message": "The page did not finish loading in time.",
+        "retry_after_seconds": null
+      }
+    }
+  ],
+  "expect": {
+    "error": {
+      "kind": "capture",
+      "error_code": "capture_timeout",
+      "http_status": 504
+    }
+  }
+}

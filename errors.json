@@ -1,0 +1,64 @@
+{
+  "description": "Which error each error_code raises, and whether a client retries it. Codes not listed raise the base error.",
+  "kinds": {
+    "authentication": [
+      "api_key_invalid"
+    ],
+    "invalid_request": [
+      "validation_failed",
+      "s3_destination_invalid",
+      "web_page_id_invalid",
+      "idempotency_key_reused",
+      "sitemap_schedule_not_triggerable"
+    ],
+    "plan_limit": [
+      "quota_exhausted",
+      "feature_not_available",
+      "no_trigger_allowance",
+      "forbidden"
+    ],
+    "not_found": [
+      "capture_not_found",
+      "web_page_not_found",
+      "not_found"
+    ],
+    "rate_limit": [
+      "rate_limited",
+      "queue_full"
+    ],
+    "capture": [
+      "capture_failed",
+      "capture_timeout",
+      "payload_too_large",
+      "capture_expired"
+    ],
+    "service": [
+      "capture_busy",
+      "service_unavailable",
+      "internal_error",
+      "request_cancelled",
+      "idempotency_key_in_use"
+    ]
+  },
+  "retryable": [
+    "rate_limited",
+    "capture_busy",
+    "service_unavailable",
+    "idempotency_key_in_use"
+  ],
+  "fallback_by_status": {
+    "description": "When a refusal has no JSON error body (a proxy or load balancer answered), the code is taken from the status.",
+    "400": "validation_failed",
+    "401": "api_key_invalid",
+    "403": "forbidden",
+    "404": "not_found",
+    "409": "idempotency_key_in_use",
+    "413": "payload_too_large",
+    "429": "rate_limited",
+    "500": "internal_error",
+    "502": "service_unavailable",
+    "503": "service_unavailable",
+    "504": "service_unavailable",
+    "other": "unknown_error"
+  }
+}

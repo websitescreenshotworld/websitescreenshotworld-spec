@@ -1,0 +1,82 @@
+{
+  "name": "html_error_page",
+  "description": "A proxy's HTML page: the code comes from the status, and 502 is retried.",
+  "call": {
+    "product": "instant_snap",
+    "method": "capture",
+    "options": {
+      "url": "https://example.com"
+    }
+  },
+  "expect_requests": [
+    {
+      "method": "POST",
+      "path": "/instant-snap/v1/captures",
+      "headers": {
+        "X-Api-Key": "wsw_api_000000000000_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "Content-Type": "application/json"
+      },
+      "idempotency_key": "same",
+      "body": {
+        "url": "https://example.com",
+        "response_type": "json"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/instant-snap/v1/captures",
+      "headers": {
+        "X-Api-Key": "wsw_api_000000000000_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "Content-Type": "application/json"
+      },
+      "idempotency_key": "same",
+      "body": {
+        "url": "https://example.com",
+        "response_type": "json"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/instant-snap/v1/captures",
+      "headers": {
+        "X-Api-Key": "wsw_api_000000000000_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "Content-Type": "application/json"
+      },
+      "idempotency_key": "same",
+      "body": {
+        "url": "https://example.com",
+        "response_type": "json"
+      }
+    }
+  ],
+  "responses": [
+    {
+      "status": 502,
+      "headers": {
+        "Content-Type": "text/html"
+      },
+      "body_text": "<html><body>Bad gateway</body></html>"
+    },
+    {
+      "status": 502,
+      "headers": {
+        "Content-Type": "text/html"
+      },
+      "body_text": "<html><body>Bad gateway</body></html>"
+    },
+    {
+      "status": 502,
+      "headers": {
+        "Content-Type": "text/html"
+      },
+      "body_text": "<html><body>Bad gateway</body></html>"
+    }
+  ],
+  "expect": {
+    "error": {
+      "kind": "service",
+      "error_code": "service_unavailable",
+      "http_status": 502
+    }
+  }
+}

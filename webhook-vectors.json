@@ -1,0 +1,119 @@
+{
+  "description": "Signature cases every client's verify() must agree with. `now` is Unix seconds; tolerance is 300 seconds unless given.",
+  "secret": "whsec_Zm9yLXRlc3RzLW9ubHktbm90LWEtcmVhbC1zZWNyZXQ",
+  "cases": [
+    {
+      "name": "valid",
+      "header": "t=1790418600,v1=9c49848601f1f89c618ecbf4a0a9b943f99b9b21fe259deac9bcdb5d031925f2",
+      "body": "{\"id\":\"8c1f0a2e-4b6d-4f3a-9e21-5d7c9b0a1f11\",\"type\":\"ping\",\"created_at\":\"2026-09-26T10:30:00.000Z\",\"product\":\"auto_schedule\",\"data\":{\"endpoint_id\":\"2b9e7c4d-1a3f-4e5b-8c6d-7e8f9a0b1c2d\",\"endpoint_name\":\"Production\",\"message\":\"This is a test delivery from Website Screenshot World.\",\"sent_at\":\"2026-09-26T10:30:00.000Z\"}}",
+      "now": 1790418610,
+      "valid": true
+    },
+    {
+      "name": "valid_upper_case_hex",
+      "header": "t=1790418600,v1=9C49848601F1F89C618ECBF4A0A9B943F99B9B21FE259DEAC9BCDB5D031925F2",
+      "body": "{\"id\":\"8c1f0a2e-4b6d-4f3a-9e21-5d7c9b0a1f11\",\"type\":\"ping\",\"created_at\":\"2026-09-26T10:30:00.000Z\",\"product\":\"auto_schedule\",\"data\":{\"endpoint_id\":\"2b9e7c4d-1a3f-4e5b-8c6d-7e8f9a0b1c2d\",\"endpoint_name\":\"Production\",\"message\":\"This is a test delivery from Website Screenshot World.\",\"sent_at\":\"2026-09-26T10:30:00.000Z\"}}",
+      "now": 1790418600,
+      "valid": true
+    },
+    {
+      "name": "valid_with_spaces_and_unknown_fields",
+      "header": "t=1790418600, v0=deadbeef, v1=9c49848601f1f89c618ecbf4a0a9b943f99b9b21fe259deac9bcdb5d031925f2, x=1",
+      "body": "{\"id\":\"8c1f0a2e-4b6d-4f3a-9e21-5d7c9b0a1f11\",\"type\":\"ping\",\"created_at\":\"2026-09-26T10:30:00.000Z\",\"product\":\"auto_schedule\",\"data\":{\"endpoint_id\":\"2b9e7c4d-1a3f-4e5b-8c6d-7e8f9a0b1c2d\",\"endpoint_name\":\"Production\",\"message\":\"This is a test delivery from Website Screenshot World.\",\"sent_at\":\"2026-09-26T10:30:00.000Z\"}}",
+      "now": 1790418600,
+      "valid": true
+    },
+    {
+      "name": "valid_second_v1_matches",
+      "header": "t=1790418600,v1=0000000000000000000000000000000000000000000000000000000000000000,v1=9c49848601f1f89c618ecbf4a0a9b943f99b9b21fe259deac9bcdb5d031925f2",
+      "body": "{\"id\":\"8c1f0a2e-4b6d-4f3a-9e21-5d7c9b0a1f11\",\"type\":\"ping\",\"created_at\":\"2026-09-26T10:30:00.000Z\",\"product\":\"auto_schedule\",\"data\":{\"endpoint_id\":\"2b9e7c4d-1a3f-4e5b-8c6d-7e8f9a0b1c2d\",\"endpoint_name\":\"Production\",\"message\":\"This is a test delivery from Website Screenshot World.\",\"sent_at\":\"2026-09-26T10:30:00.000Z\"}}",
+      "now": 1790418600,
+      "valid": true
+    },
+    {
+      "name": "body_changed",
+      "header": "t=1790418600,v1=9c49848601f1f89c618ecbf4a0a9b943f99b9b21fe259deac9bcdb5d031925f2",
+      "body": "{\"id\":\"8c1f0a2e-4b6d-4f3a-9e21-5d7c9b0a1f11\",\"type\":\"ping\",\"created_at\":\"2026-09-26T10:30:00.000Z\",\"product\":\"auto_schedule\",\"data\":{\"endpoint_id\":\"2b9e7c4d-1a3f-4e5b-8c6d-7e8f9a0b1c2d\",\"endpoint_name\":\"Productio2\",\"message\":\"This is a test delivery from Website Screenshot World.\",\"sent_at\":\"2026-09-26T10:30:00.000Z\"}}",
+      "now": 1790418600,
+      "valid": false
+    },
+    {
+      "name": "whitespace_added_to_body",
+      "header": "t=1790418600,v1=9c49848601f1f89c618ecbf4a0a9b943f99b9b21fe259deac9bcdb5d031925f2",
+      "body": "{\"id\":\"8c1f0a2e-4b6d-4f3a-9e21-5d7c9b0a1f11\",\"type\":\"ping\",\"created_at\":\"2026-09-26T10:30:00.000Z\",\"product\":\"auto_schedule\",\"data\":{\"endpoint_id\":\"2b9e7c4d-1a3f-4e5b-8c6d-7e8f9a0b1c2d\",\"endpoint_name\":\"Production\",\"message\":\"This is a test delivery from Website Screenshot World.\",\"sent_at\":\"2026-09-26T10:30:00.000Z\"}}\n",
+      "now": 1790418600,
+      "valid": false
+    },
+    {
+      "name": "wrong_secret",
+      "header": "t=1790418600,v1=179f2d3907fec96a807578d5d80e9a6e7c01f902ba420f9547e0552627b2e4c8",
+      "body": "{\"id\":\"8c1f0a2e-4b6d-4f3a-9e21-5d7c9b0a1f11\",\"type\":\"ping\",\"created_at\":\"2026-09-26T10:30:00.000Z\",\"product\":\"auto_schedule\",\"data\":{\"endpoint_id\":\"2b9e7c4d-1a3f-4e5b-8c6d-7e8f9a0b1c2d\",\"endpoint_name\":\"Production\",\"message\":\"This is a test delivery from Website Screenshot World.\",\"sent_at\":\"2026-09-26T10:30:00.000Z\"}}",
+      "now": 1790418600,
+      "valid": false
+    },
+    {
+      "name": "too_old",
+      "header": "t=1790418600,v1=9c49848601f1f89c618ecbf4a0a9b943f99b9b21fe259deac9bcdb5d031925f2",
+      "body": "{\"id\":\"8c1f0a2e-4b6d-4f3a-9e21-5d7c9b0a1f11\",\"type\":\"ping\",\"created_at\":\"2026-09-26T10:30:00.000Z\",\"product\":\"auto_schedule\",\"data\":{\"endpoint_id\":\"2b9e7c4d-1a3f-4e5b-8c6d-7e8f9a0b1c2d\",\"endpoint_name\":\"Production\",\"message\":\"This is a test delivery from Website Screenshot World.\",\"sent_at\":\"2026-09-26T10:30:00.000Z\"}}",
+      "now": 1790418901,
+      "valid": false
+    },
+    {
+      "name": "too_far_in_future",
+      "header": "t=1790418600,v1=9c49848601f1f89c618ecbf4a0a9b943f99b9b21fe259deac9bcdb5d031925f2",
+      "body": "{\"id\":\"8c1f0a2e-4b6d-4f3a-9e21-5d7c9b0a1f11\",\"type\":\"ping\",\"created_at\":\"2026-09-26T10:30:00.000Z\",\"product\":\"auto_schedule\",\"data\":{\"endpoint_id\":\"2b9e7c4d-1a3f-4e5b-8c6d-7e8f9a0b1c2d\",\"endpoint_name\":\"Production\",\"message\":\"This is a test delivery from Website Screenshot World.\",\"sent_at\":\"2026-09-26T10:30:00.000Z\"}}",
+      "now": 1790418299,
+      "valid": false
+    },
+    {
+      "name": "at_tolerance_edge",
+      "header": "t=1790418600,v1=9c49848601f1f89c618ecbf4a0a9b943f99b9b21fe259deac9bcdb5d031925f2",
+      "body": "{\"id\":\"8c1f0a2e-4b6d-4f3a-9e21-5d7c9b0a1f11\",\"type\":\"ping\",\"created_at\":\"2026-09-26T10:30:00.000Z\",\"product\":\"auto_schedule\",\"data\":{\"endpoint_id\":\"2b9e7c4d-1a3f-4e5b-8c6d-7e8f9a0b1c2d\",\"endpoint_name\":\"Production\",\"message\":\"This is a test delivery from Website Screenshot World.\",\"sent_at\":\"2026-09-26T10:30:00.000Z\"}}",
+      "now": 1790418900,
+      "valid": true
+    },
+    {
+      "name": "custom_tolerance",
+      "header": "t=1790418600,v1=9c49848601f1f89c618ecbf4a0a9b943f99b9b21fe259deac9bcdb5d031925f2",
+      "body": "{\"id\":\"8c1f0a2e-4b6d-4f3a-9e21-5d7c9b0a1f11\",\"type\":\"ping\",\"created_at\":\"2026-09-26T10:30:00.000Z\",\"product\":\"auto_schedule\",\"data\":{\"endpoint_id\":\"2b9e7c4d-1a3f-4e5b-8c6d-7e8f9a0b1c2d\",\"endpoint_name\":\"Production\",\"message\":\"This is a test delivery from Website Screenshot World.\",\"sent_at\":\"2026-09-26T10:30:00.000Z\"}}",
+      "now": 1790419200,
+      "tolerance": 900,
+      "valid": true
+    },
+    {
+      "name": "no_timestamp",
+      "header": "v1=9c49848601f1f89c618ecbf4a0a9b943f99b9b21fe259deac9bcdb5d031925f2",
+      "body": "{\"id\":\"8c1f0a2e-4b6d-4f3a-9e21-5d7c9b0a1f11\",\"type\":\"ping\",\"created_at\":\"2026-09-26T10:30:00.000Z\",\"product\":\"auto_schedule\",\"data\":{\"endpoint_id\":\"2b9e7c4d-1a3f-4e5b-8c6d-7e8f9a0b1c2d\",\"endpoint_name\":\"Production\",\"message\":\"This is a test delivery from Website Screenshot World.\",\"sent_at\":\"2026-09-26T10:30:00.000Z\"}}",
+      "now": 1790418600,
+      "valid": false
+    },
+    {
+      "name": "no_signature",
+      "header": "t=1790418600",
+      "body": "{\"id\":\"8c1f0a2e-4b6d-4f3a-9e21-5d7c9b0a1f11\",\"type\":\"ping\",\"created_at\":\"2026-09-26T10:30:00.000Z\",\"product\":\"auto_schedule\",\"data\":{\"endpoint_id\":\"2b9e7c4d-1a3f-4e5b-8c6d-7e8f9a0b1c2d\",\"endpoint_name\":\"Production\",\"message\":\"This is a test delivery from Website Screenshot World.\",\"sent_at\":\"2026-09-26T10:30:00.000Z\"}}",
+      "now": 1790418600,
+      "valid": false
+    },
+    {
+      "name": "empty_header",
+      "header": "",
+      "body": "{\"id\":\"8c1f0a2e-4b6d-4f3a-9e21-5d7c9b0a1f11\",\"type\":\"ping\",\"created_at\":\"2026-09-26T10:30:00.000Z\",\"product\":\"auto_schedule\",\"data\":{\"endpoint_id\":\"2b9e7c4d-1a3f-4e5b-8c6d-7e8f9a0b1c2d\",\"endpoint_name\":\"Production\",\"message\":\"This is a test delivery from Website Screenshot World.\",\"sent_at\":\"2026-09-26T10:30:00.000Z\"}}",
+      "now": 1790418600,
+      "valid": false
+    },
+    {
+      "name": "timestamp_not_a_number",
+      "header": "t=abc,v1=9c49848601f1f89c618ecbf4a0a9b943f99b9b21fe259deac9bcdb5d031925f2",
+      "body": "{\"id\":\"8c1f0a2e-4b6d-4f3a-9e21-5d7c9b0a1f11\",\"type\":\"ping\",\"created_at\":\"2026-09-26T10:30:00.000Z\",\"product\":\"auto_schedule\",\"data\":{\"endpoint_id\":\"2b9e7c4d-1a3f-4e5b-8c6d-7e8f9a0b1c2d\",\"endpoint_name\":\"Production\",\"message\":\"This is a test delivery from Website Screenshot World.\",\"sent_at\":\"2026-09-26T10:30:00.000Z\"}}",
+      "now": 1790418600,
+      "valid": false
+    },
+    {
+      "name": "non_ascii_body",
+      "header": "t=1790418600,v1=e6d930c59790991d36cd375ccfcda42f57d776f93269fc12a952a94523ad40a2",
+      "body": "{\"id\":\"8c1f0a2e-4b6d-4f3a-9e21-5d7c9b0a1f11\",\"type\":\"ping\",\"created_at\":\"2026-09-26T10:30:00.000Z\",\"product\":\"auto_schedule\",\"data\":{\"endpoint_id\":\"2b9e7c4d-1a3f-4e5b-8c6d-7e8f9a0b1c2d\",\"endpoint_name\":\"Prodüction\",\"message\":\"This is a test delivery from Website Screenshot World.\",\"sent_at\":\"2026-09-26T10:30:00.000Z\"}}",
+      "now": 1790418600,
+      "valid": true
+    }
+  ]
+}

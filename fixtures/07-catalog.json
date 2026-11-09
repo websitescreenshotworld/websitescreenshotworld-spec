@@ -1,0 +1,50 @@
+{
+  "name": "catalog",
+  "description": "The catalog.",
+  "call": {
+    "product": "instant_snap",
+    "method": "catalog"
+  },
+  "expect_requests": [
+    {
+      "method": "GET",
+      "path": "/instant-snap/v1/catalog",
+      "headers": {
+        "X-Api-Key": "wsw_api_000000000000_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      }
+    }
+  ],
+  "responses": [
+    {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "success": true,
+        "emulated_devices": [
+          "iPhone 13",
+          "Pixel 7"
+        ],
+        "proxy_countries": [
+          "gb",
+          "in",
+          "us"
+        ]
+      }
+    }
+  ],
+  "expect": {
+    "result": {
+      "emulated_devices": [
+        "iPhone 13",
+        "Pixel 7"
+      ],
+      "proxy_countries": [
+        "gb",
+        "in",
+        "us"
+      ]
+    }
+  }
+}

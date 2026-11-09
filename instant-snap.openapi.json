@@ -1,0 +1,1249 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Instant Snap API",
+    "version": "1.1.0",
+    "description": "Capture a web page on demand: an image, a video, a PDF or the page's readable text as markdown, returned in the response, as a download link, or uploaded to your own bucket.",
+    "contact": {
+      "email": "support@websitescreenshotworld.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.websitescreenshotworld.com"
+    }
+  ],
+  "security": [
+    {
+      "apiKey": []
+    }
+  ],
+  "paths": {
+    "/instant-snap/v1/captures": {
+      "post": {
+        "operationId": "createCapture",
+        "summary": "Capture a page",
+        "description": "Runs the capture inside the request: the capture itself gets at most 100 seconds, and every answer is sent within 120. Set client timeouts above 120 seconds. Only successful captures are charged; a capture that could not be stored and answered within the 120 seconds ends as `capture_timeout` and is not charged. With `async: true` it is not waited on: the answer is `202 Accepted` at once and the capture runs with up to `timeout` seconds (30-300, default 120).",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 255,
+              "pattern": "^[\\x21-\\x7E]+$"
+            },
+            "description": "Makes the request safe to retry. A second request with the same key within 24 hours does not capture again: it gets the first capture back (with `Idempotent-Replayed: true`), `idempotency_key_in_use` while the first is still running, or `idempotency_key_reused` if the body differs or the first was `by_format` (whose file is not kept). A replayed `async` capture is answered `202 Accepted` with its `Location`, as the first request was, whatever state it is in now; one that never ran (`capture_busy`, `service_unavailable`, `queue_full`, `capture_expired`) releases the key, so the retry runs."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptureRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "`json` and `cloud_storage`: the capture. `by_format`: the file itself, with its metadata in `X-InstantSnap-*` headers - for a content capture, the text, as `text/markdown; charset=utf-8` or `text/plain; charset=utf-8`.",
+            "headers": {
+              "Idempotent-Replayed": {
+                "description": "`true` when this answer is a replay of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-InstantSnap-Id": {
+                "description": "The capture id.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-InstantSnap-Status": {
+                "description": "`delivered`.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-InstantSnap-Width": {
+                "description": "width.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-InstantSnap-Height": {
+                "description": "height.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-InstantSnap-Size-Bytes": {
+                "description": "size bytes.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-InstantSnap-Duration-Ms": {
+                "description": "duration ms.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-InstantSnap-Page-Http-Status": {
+                "description": "page http status.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-InstantSnap-Spec-Version": {
+                "description": "spec version.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-InstantSnap-Captured-At": {
+                "description": "ISO 8601 with milliseconds.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-InstantSnap-Final-Url": {
+                "description": "Absent when the URL is not plain ASCII.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-InstantSnap-Sha256": {
+                "description": "Lowercase hex digest of the body.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-InstantSnap-Part-Count": {
+                "description": "Only when the answer has more than one part.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Capture"
+                }
+              },
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "contentMediaType": "application/octet-stream"
+                }
+              },
+              "text/markdown": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "`async: true`: accepted, not captured yet. The capture as it is now - `status` `queued` (or already `running`). Read it again at `Location`, or wait for `callback_url`.",
+            "headers": {
+              "Location": {
+                "description": "Where to read the capture: /instant-snap/v1/captures/{id}.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Capture"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request was not valid. Codes: `validation_failed`, `s3_destination_invalid`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The key is missing, malformed, revoked or for the other product. Codes: `api_key_invalid`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "The plan has no captures (or storage) left. Codes: `quota_exhausted`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The plan does not include this. Codes: `feature_not_available`, `no_trigger_allowance`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "An Idempotency-Key clash. Codes: `idempotency_key_in_use`, `idempotency_key_reused`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The file is larger than 64 MB, the most `by_format` returns, or a content capture's text is larger than 2 MB. Codes: `payload_too_large`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests, or your organization already has 100 async captures waiting. Codes: `rate_limited`, `queue_full`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Our side failed after the capture ran. Codes: `internal_error`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The website could not be captured. Codes: `capture_failed`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "No capture slot (every browser is busy, or your organization already has its share of captures running), or a service is down, including no outbound proxy being available; nothing is charged, retry after the hint. Codes: `capture_busy`, `service_unavailable`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "The page did not finish in time, or the capture could not be stored and answered within the 120-second budget; not charged either way. Codes: `capture_timeout`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/instant-snap/v1/captures/{id}": {
+      "get": {
+        "operationId": "getCapture",
+        "summary": "Read a capture back",
+        "description": "Also reissues `download_url`.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The capture.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Capture"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Bad key. Codes: `api_key_invalid`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such capture for this account. Codes: `capture_not_found`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Reading a capture back has a window of its own, 300 requests a minute per source - five times the captures' - so polling an async capture does not spend the window captures use. Codes: `rate_limited`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/instant-snap/v1/defaults": {
+      "get": {
+        "operationId": "getDefaults",
+        "summary": "Defaults and limits",
+        "security": [],
+        "description": "No key needed. Cached for a day.",
+        "responses": {
+          "200": {
+            "description": "The default set.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Defaults"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/instant-snap/v1/catalog": {
+      "get": {
+        "operationId": "getCatalog",
+        "summary": "Devices and proxy countries",
+        "responses": {
+          "200": {
+            "description": "What `emulated_device` and `proxy.country` accept.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Catalog"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Bad key. Codes: `api_key_invalid`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The proxy pool could not be reached. Codes: `service_unavailable`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "apiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Api-Key"
+      }
+    },
+    "schemas": {
+      "CaptureRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "url"
+        ],
+        "description": "Every field except `url` is optional. A field that is not sent takes its default; `false` is a value, not \"not sent\".",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2048,
+            "description": "The page to capture. Absolute http or https, no credentials in the URL."
+          },
+          "response_type": {
+            "type": "string",
+            "enum": [
+              "json",
+              "by_format",
+              "cloud_storage"
+            ],
+            "default": "json",
+            "description": "`json` answers with metadata and a download link; `by_format` answers with the file itself; `cloud_storage` uploads to your bucket."
+          },
+          "media_category": {
+            "type": "string",
+            "enum": [
+              "image",
+              "video",
+              "pdf",
+              "content"
+            ],
+            "default": "image",
+            "description": "`content` returns the page's readable main content as text instead of a picture: navigation, footers, cookie banners and scripts are left out. Charged like an image. Sending a content `format` without `media_category` is enough."
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "png",
+              "jpeg",
+              "webp",
+              "tiff",
+              "mp4",
+              "webm",
+              "mov",
+              "gif",
+              "image_pdf",
+              "document_pdf",
+              "markdown",
+              "text"
+            ],
+            "description": "Must belong to `media_category`. image: png, jpeg, webp, tiff. video: mp4, webm, mov, gif. pdf: image_pdf, document_pdf. content: markdown (the default), text. A content capture returns at most 2 MB of UTF-8 (`limits.content_max_bytes` in the defaults) and does not take `page_source`, `timestamp_watermark`, `auto_height`, `max_height`, `selectors.xpath`, `selectors.hide` or `selectors.hover`."
+          },
+          "viewport": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "width": {
+                "type": "integer",
+                "minimum": 250,
+                "maximum": 7680,
+                "default": 1920,
+                "description": "Viewport width in CSS pixels."
+              },
+              "height": {
+                "type": "integer",
+                "minimum": 250,
+                "maximum": 7680,
+                "default": 1080,
+                "description": "Viewport height in CSS pixels."
+              },
+              "device_scale_factor": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 3,
+                "default": 1,
+                "description": "Device pixel ratio."
+              }
+            }
+          },
+          "device_category": {
+            "type": "string",
+            "enum": [
+              "desktop",
+              "mobile"
+            ],
+            "default": "desktop"
+          },
+          "emulated_device": {
+            "type": "string",
+            "description": "A device from the catalog, case-insensitive. Defaults to \"iPhone 13\" when `device_category` is mobile."
+          },
+          "scroll_mode": {
+            "type": "string",
+            "enum": [
+              "viewport",
+              "scroll"
+            ],
+            "default": "viewport",
+            "description": "`scroll` captures the full page. Video defaults to `scroll`."
+          },
+          "auto_height": {
+            "type": "boolean",
+            "default": false
+          },
+          "max_height": {
+            "type": "integer",
+            "minimum": 250,
+            "maximum": 100000,
+            "description": "Refused, not lowered, above the format ceiling (WebP 16383 ÷ scale factor, JPEG 65500)."
+          },
+          "zoom": {
+            "type": "integer",
+            "minimum": 50,
+            "maximum": 100,
+            "default": 100,
+            "description": "Percent. Applied to a desktop video only (`media_category` `video` without an emulated device); any other value than 100 on another capture is refused with `validation_failed`."
+          },
+          "block_ads": {
+            "type": "boolean",
+            "default": true
+          },
+          "block_pop_ups": {
+            "type": "boolean",
+            "default": true
+          },
+          "press_escape": {
+            "type": "boolean",
+            "default": false,
+            "description": "Press the Escape key after the pop-up pass and again after scrolling (once in a video), for a modal that closes on Escape."
+          },
+          "page_timeout_ms": {
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 60000,
+            "default": 30000
+          },
+          "scrolling_delay_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000,
+            "default": 500,
+            "description": "How long to pause after each scroll step of a full-page capture. Ignored for a viewport capture."
+          },
+          "user_agent": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "locale": {
+            "type": "string",
+            "maxLength": 64,
+            "description": "BCP 47."
+          },
+          "time_zone": {
+            "type": "string",
+            "maxLength": 64,
+            "description": "IANA time zone."
+          },
+          "headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Sent with every request the page makes. Names are sent exactly as given. Requires the RequestHeadersCookies plan feature."
+          },
+          "cookies": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Set for the URL's origin. Names are sent exactly as given. Requires the RequestHeadersCookies plan feature."
+          },
+          "geolocation": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "latitude": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "accuracy": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 10000,
+                "default": 100,
+                "description": "Metres."
+              }
+            },
+            "description": "Latitude and longitude are sent together or not at all."
+          },
+          "selectors": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "xpath": {
+                "type": "string",
+                "maxLength": 512,
+                "description": "Capture only the element this XPath selects."
+              },
+              "hide": {
+                "type": "string",
+                "maxLength": 2000,
+                "description": "Up to 25 comma-separated CSS selectors (an XPath starting with // works too) of elements to hide before capturing. Each is applied on its own; one the browser rejects is skipped."
+              },
+              "click": {
+                "type": "string",
+                "maxLength": 512,
+                "description": "CSS selector of an element to click before capturing."
+              },
+              "hover": {
+                "type": "string",
+                "maxLength": 512,
+                "description": "CSS selector of an element to hover before capturing."
+              }
+            }
+          },
+          "proxy": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "country"
+            ],
+            "properties": {
+              "country": {
+                "type": "string",
+                "maxLength": 64,
+                "description": "A country from `GET /instant-snap/v1/catalog` `proxy_countries`. Requires the ProxyLocation plan feature. Without this block the capture still goes out through a proxy, in the default location."
+              }
+            }
+          },
+          "timestamp_watermark": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "A strip with the capture time and URL. Sending the block turns it on. Not available for video.",
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+                "default": true
+              },
+              "location": {
+                "type": "string",
+                "enum": [
+                  "top",
+                  "bottom"
+                ],
+                "default": "top"
+              },
+              "font_color": {
+                "type": "string",
+                "default": "#000000",
+                "description": "Hex colour."
+              },
+              "background_color": {
+                "type": "string",
+                "default": "#FFFFFF",
+                "description": "Hex colour."
+              }
+            }
+          },
+          "page_source": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Also keep the page source. Charged as a second capture, capped at 10 MB, not available with `by_format`.",
+            "properties": {
+              "format": {
+                "type": "string",
+                "enum": [
+                  "html",
+                  "json",
+                  "text"
+                ],
+                "default": "html"
+              }
+            }
+          },
+          "s3_delivery": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "access_key_id",
+              "secret_access_key",
+              "bucket"
+            ],
+            "description": "Where `cloud_storage` uploads the file. Required for `cloud_storage` and refused for the other response types. Needs `region` or `endpoint_url`.",
+            "properties": {
+              "access_key_id": {
+                "type": "string"
+              },
+              "secret_access_key": {
+                "type": "string",
+                "writeOnly": true,
+                "description": "Write-only; never returned."
+              },
+              "bucket": {
+                "type": "string"
+              },
+              "region": {
+                "type": "string"
+              },
+              "endpoint_url": {
+                "type": "string",
+                "format": "uri",
+                "description": "https only, and not a private address."
+              },
+              "force_path_style": {
+                "type": "boolean",
+                "default": false
+              },
+              "key_prefix": {
+                "type": "string"
+              },
+              "wait_for_sync": {
+                "type": "boolean",
+                "default": false,
+                "description": "Wait up to 30 seconds for the upload before answering, but never past the 95-second answer limit; when the time runs out the status is `in_progress`."
+              }
+            }
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2048,
+            "description": "Also receives the capture.succeeded or capture.failed webhook, and delivery.completed when a `cloud_storage` upload has finished or finally failed. A capture refused before it ran and answered in the response (`capture_busy`, `service_unavailable`, `queue_full`) sends no webhook: the response is the answer. Requires the Webhooks plan feature."
+          },
+          "async": {
+            "type": "boolean",
+            "default": false,
+            "description": "Do not wait: answered `202 Accepted` at once with the capture (`status` `queued`) and a `Location` header, then run when a browser is free. Read it with GET /instant-snap/v1/captures/{id} or receive it at `callback_url`. Only with `response_type` `json` or `cloud_storage`. One still waiting after 15 minutes ends as `capture_expired`, not charged."
+          },
+          "timeout": {
+            "type": "integer",
+            "minimum": 30,
+            "maximum": 300,
+            "default": 120,
+            "description": "Async only: the seconds the capture may take in the browser, every attempt included. Time in the queue does not count. Refused without `async`."
+          }
+        }
+      },
+      "Viewport": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "width": {
+            "type": "integer",
+            "minimum": 250,
+            "maximum": 7680,
+            "default": 1920,
+            "description": "Viewport width in CSS pixels."
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 250,
+            "maximum": 7680,
+            "default": 1080,
+            "description": "Viewport height in CSS pixels."
+          },
+          "device_scale_factor": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 3,
+            "default": 1,
+            "description": "Device pixel ratio."
+          }
+        }
+      },
+      "Capture": {
+        "type": "object",
+        "required": [
+          "success",
+          "id",
+          "status",
+          "response_type",
+          "media_category",
+          "format",
+          "content_type",
+          "size_bytes",
+          "width",
+          "height",
+          "duration_ms",
+          "page_http_status",
+          "captured_at",
+          "final_url",
+          "media_sha256",
+          "download_url",
+          "expires_at",
+          "page_source",
+          "s3_delivery",
+          "callback_url",
+          "error_code",
+          "spec_version"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "queued",
+              "running",
+              "succeeded",
+              "delivered",
+              "failed",
+              "timed_out",
+              "expired"
+            ],
+            "description": "`delivered` is the end state of a `by_format` capture: the file went back in the response and is not kept. An async capture reads `queued` until a browser takes it and `running` while it is captured."
+          },
+          "response_type": {
+            "type": "string",
+            "enum": [
+              "json",
+              "by_format",
+              "cloud_storage"
+            ]
+          },
+          "media_category": {
+            "type": "string",
+            "enum": [
+              "image",
+              "video",
+              "pdf",
+              "content"
+            ]
+          },
+          "format": {
+            "description": "The format written.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "content_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "size_bytes": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "width": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "height": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "duration_ms": {
+            "description": "How long the capture took.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "page_http_status": {
+            "description": "The status the website answered with.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "captured_at": {
+            "format": "date-time",
+            "description": "When the page was captured. UTC, ISO 8601 with milliseconds (`2026-09-26T10:30:00.000Z`).",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "final_url": {
+            "description": "Where the browser ended up, when the page redirected.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "media_sha256": {
+            "description": "Lowercase hex digest of the file.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "download_url": {
+            "format": "uri",
+            "description": "Valid for 60 minutes and reissued on every read. Null for `by_format` and `cloud_storage`.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "expires_at": {
+            "format": "date-time",
+            "description": "When the file is deleted (24 hours after capture). UTC, ISO 8601 with milliseconds (`2026-09-26T10:30:00.000Z`).",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "page_source": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "format": {
+                "type": "string",
+                "enum": [
+                  "html",
+                  "json",
+                  "text"
+                ]
+              },
+              "content_type": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "size_bytes": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "sha256": {
+                "description": "Lowercase hex.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "download_url": {
+                "format": "uri",
+                "description": "Short-lived; reissued on every read.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "s3_delivery": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "description": "Present for `cloud_storage` only.",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "not_started",
+                  "in_progress",
+                  "completed",
+                  "failed"
+                ]
+              },
+              "bucket": {
+                "type": "string"
+              },
+              "key": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "access_key_id": {
+                "description": "Masked to its last four characters.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "error": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "callback_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "error_code": {
+            "description": "Why a `failed` or `timed_out` capture ended; one of the error tokens. An async capture that never ran ends `failed` with `capture_expired`.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "spec_version": {
+            "type": "string",
+            "examples": [
+              "v1"
+            ],
+            "description": "The default set the capture was taken under."
+          }
+        }
+      },
+      "Defaults": {
+        "type": "object",
+        "description": "The values a capture takes for fields it does not send, and the limits it is checked against. Versioned by `spec_version`.",
+        "additionalProperties": true,
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "spec_version": {
+            "type": "string"
+          },
+          "response_type": {
+            "type": "string"
+          },
+          "media_category": {
+            "type": "string"
+          },
+          "format": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "formats": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "device_category": {
+            "type": "string"
+          },
+          "emulated_device": {
+            "type": "string"
+          },
+          "viewport": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "width": {
+                "type": "integer",
+                "minimum": 250,
+                "maximum": 7680,
+                "default": 1920,
+                "description": "Viewport width in CSS pixels."
+              },
+              "height": {
+                "type": "integer",
+                "minimum": 250,
+                "maximum": 7680,
+                "default": 1080,
+                "description": "Viewport height in CSS pixels."
+              },
+              "device_scale_factor": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 3,
+                "default": 1,
+                "description": "Device pixel ratio."
+              }
+            }
+          },
+          "zoom": {
+            "type": "integer"
+          },
+          "scroll_mode": {
+            "type": "string"
+          },
+          "auto_height": {
+            "type": "boolean"
+          },
+          "auto_height_max_height": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "auto_height_max_height_webp": {
+            "type": "integer"
+          },
+          "block_ads": {
+            "type": "boolean"
+          },
+          "block_pop_ups": {
+            "type": "boolean"
+          },
+          "press_escape": {
+            "type": "boolean"
+          },
+          "page_timeout_ms": {
+            "type": "integer"
+          },
+          "scrolling_delay_ms": {
+            "type": "integer"
+          },
+          "geolocation": {
+            "type": "boolean"
+          },
+          "geolocation_accuracy": {
+            "type": "number"
+          },
+          "wait_for_cloud_sync": {
+            "type": "boolean"
+          },
+          "timestamp_watermark": {
+            "type": "object"
+          },
+          "page_source": {
+            "type": "object"
+          },
+          "limits": {
+            "type": "object"
+          },
+          "left_to_the_browser": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Catalog": {
+        "type": "object",
+        "required": [
+          "success",
+          "emulated_devices",
+          "proxy_countries"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "emulated_devices": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "proxy_countries": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "success",
+          "error_code",
+          "error_message",
+          "retry_after_seconds"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": false
+          },
+          "error_code": {
+            "type": "string",
+            "examples": [
+              "rate_limited"
+            ],
+            "description": "A stable, lowercase token. Switch on this, never on the HTTP status or the message."
+          },
+          "error_message": {
+            "type": "string",
+            "description": "One sentence for a person. The wording can change between releases."
+          },
+          "retry_after_seconds": {
+            "description": "Seconds to wait before retrying. Set on rate_limited, queue_full, capture_busy, service_unavailable and idempotency_key_in_use; mirrors the Retry-After header.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

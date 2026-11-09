@@ -1,0 +1,63 @@
+{
+  "name": "capture_file",
+  "description": "by_format: the body is the file, the metadata comes from X-InstantSnap-* headers.",
+  "call": {
+    "product": "instant_snap",
+    "method": "capture_file",
+    "options": {
+      "url": "https://example.com",
+      "format": "png"
+    }
+  },
+  "expect_requests": [
+    {
+      "method": "POST",
+      "path": "/instant-snap/v1/captures",
+      "headers": {
+        "X-Api-Key": "wsw_api_000000000000_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "Content-Type": "application/json"
+      },
+      "idempotency_key": "present",
+      "body": {
+        "url": "https://example.com",
+        "format": "png",
+        "response_type": "by_format"
+      }
+    }
+  ],
+  "responses": [
+    {
+      "status": 200,
+      "headers": {
+        "Content-Type": "image/png",
+        "Content-Disposition": "attachment; filename=\"3f6c2a1e-9b8d-4c7e-a5f4-1d2e3c4b5a69.png\"",
+        "X-InstantSnap-Id": "3f6c2a1e-9b8d-4c7e-a5f4-1d2e3c4b5a69",
+        "X-InstantSnap-Status": "delivered",
+        "X-InstantSnap-Width": "1920",
+        "X-InstantSnap-Height": "1080",
+        "X-InstantSnap-Size-Bytes": "112",
+        "X-InstantSnap-Duration-Ms": "3900",
+        "X-InstantSnap-Page-Http-Status": "200",
+        "X-InstantSnap-Spec-Version": "v1",
+        "X-InstantSnap-Captured-At": "2026-09-26T10:30:04.512Z",
+        "X-InstantSnap-Final-Url": "https://example.com/",
+        "X-InstantSnap-Sha256": "8b8e918597e2d80a9280c6913e88ff459855889cb95d50df4da7117c6e421bd4"
+      },
+      "body_base64": "iVBORw0KGgpmaXh0dXJlLWJ5dGVzZml4dHVyZS1ieXRlc2ZpeHR1cmUtYnl0ZXNmaXh0dXJlLWJ5dGVzZml4dHVyZS1ieXRlc2ZpeHR1cmUtYnl0ZXNmaXh0dXJlLWJ5dGVzZml4dHVyZS1ieXRlcw=="
+    }
+  ],
+  "expect": {
+    "result": {
+      "id": "3f6c2a1e-9b8d-4c7e-a5f4-1d2e3c4b5a69",
+      "status": "delivered",
+      "content_type": "image/png",
+      "width": 1920,
+      "height": 1080,
+      "page_http_status": 200,
+      "final_url": "https://example.com/",
+      "sha256": "8b8e918597e2d80a9280c6913e88ff459855889cb95d50df4da7117c6e421bd4",
+      "filename": "3f6c2a1e-9b8d-4c7e-a5f4-1d2e3c4b5a69.png",
+      "body_sha256": "8b8e918597e2d80a9280c6913e88ff459855889cb95d50df4da7117c6e421bd4"
+    }
+  }
+}

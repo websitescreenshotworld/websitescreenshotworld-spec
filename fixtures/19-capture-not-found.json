@@ -1,0 +1,39 @@
+{
+  "name": "capture_not_found",
+  "description": "404 on read.",
+  "call": {
+    "product": "instant_snap",
+    "method": "get",
+    "id": "3f6c2a1e-9b8d-4c7e-a5f4-1d2e3c4b5a69"
+  },
+  "expect_requests": [
+    {
+      "method": "GET",
+      "path": "/instant-snap/v1/captures/3f6c2a1e-9b8d-4c7e-a5f4-1d2e3c4b5a69",
+      "headers": {
+        "X-Api-Key": "wsw_api_000000000000_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      }
+    }
+  ],
+  "responses": [
+    {
+      "status": 404,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "success": false,
+        "error_code": "capture_not_found",
+        "error_message": "\"id\" was not found.",
+        "retry_after_seconds": null
+      }
+    }
+  ],
+  "expect": {
+    "error": {
+      "kind": "not_found",
+      "error_code": "capture_not_found",
+      "http_status": 404
+    }
+  }
+}

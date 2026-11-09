@@ -1,0 +1,61 @@
+{
+  "name": "trigger_now_service_unavailable_then_ok",
+  "description": "Retried: trigger-now is idempotent.",
+  "call": {
+    "product": "auto_schedule",
+    "method": "trigger_now",
+    "web_page_id": "7d4e2b1a-6c5f-4a3e-9d8c-2b1a0f9e8d7c"
+  },
+  "expect_requests": [
+    {
+      "method": "POST",
+      "path": "/auto-schedule/v1/web-pages/7d4e2b1a-6c5f-4a3e-9d8c-2b1a0f9e8d7c/trigger-now",
+      "headers": {
+        "X-Api-Key": "wsw_autoapi_000000000000_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+      },
+      "body": null
+    },
+    {
+      "method": "POST",
+      "path": "/auto-schedule/v1/web-pages/7d4e2b1a-6c5f-4a3e-9d8c-2b1a0f9e8d7c/trigger-now",
+      "headers": {
+        "X-Api-Key": "wsw_autoapi_000000000000_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+      },
+      "body": null
+    }
+  ],
+  "responses": [
+    {
+      "status": 503,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "Retry-After": "0"
+      },
+      "body": {
+        "success": false,
+        "error_code": "service_unavailable",
+        "error_message": "Auto Schedule is unavailable.",
+        "retry_after_seconds": 0
+      }
+    },
+    {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "success": true,
+        "status": "triggered",
+        "web_page_id": "7d4e2b1a-6c5f-4a3e-9d8c-2b1a0f9e8d7c",
+        "triggered_by": "api",
+        "triggered_at": "2026-09-26T10:30:00.000Z",
+        "message": "The capture has been queued."
+      }
+    }
+  ],
+  "expect": {
+    "result": {
+      "status": "triggered"
+    }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "name": "queue_full",
+  "description": "A 429 queue_full: the organization already has 100 async captures waiting or running. A rate-limit error, not retried by the library.",
+  "call": {
+    "product": "instant_snap",
+    "method": "submit_to_bucket",
+    "options": {
+      "url": "https://example.com",
+      "s3_delivery": {
+        "access_key_id": "AKIAEXAMPLE000000000",
+        "secret_access_key": "example-secret",
+        "bucket": "captures",
+        "region": "eu-west-2"
+      }
+    }
+  },
+  "expect_requests": [
+    {
+      "method": "POST",
+      "path": "/instant-snap/v1/captures",
+      "headers": {
+        "X-Api-Key": "wsw_api_000000000000_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "Content-Type": "application/json"
+      },
+      "idempotency_key": "present",
+      "body": {
+        "url": "https://example.com",
+        "s3_delivery": {
+          "access_key_id": "AKIAEXAMPLE000000000",
+          "secret_access_key": "example-secret",
+          "bucket": "captures",
+          "region": "eu-west-2"
+        },
+        "response_type": "cloud_storage",
+        "async": true
+      }
+    }
+  ],
+  "responses": [
+    {
+      "status": 429,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "Retry-After": "30"
+      },
+      "body": {
+        "success": false,
+        "error_code": "queue_full",
+        "error_message": "Too many async captures are waiting; try again when some have finished.",
+        "retry_after_seconds": 30
+      }
+    }
+  ],
+  "expect": {
+    "error": {
+      "kind": "rate_limit",
+      "error_code": "queue_full",
+      "http_status": 429,
+      "retry_after_seconds": 30
+    }
+  }
+}

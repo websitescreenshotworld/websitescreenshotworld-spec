@@ -1,0 +1,68 @@
+{
+  "name": "submit",
+  "description": "An async capture: accepted at once with a 202 and a Location, status queued. async is set by the operation; timeout is the caller's.",
+  "call": {
+    "product": "instant_snap",
+    "method": "submit",
+    "options": {
+      "url": "https://example.com",
+      "timeout": 240
+    }
+  },
+  "expect_requests": [
+    {
+      "method": "POST",
+      "path": "/instant-snap/v1/captures",
+      "headers": {
+        "X-Api-Key": "wsw_api_000000000000_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "Content-Type": "application/json"
+      },
+      "idempotency_key": "present",
+      "body": {
+        "url": "https://example.com",
+        "timeout": 240,
+        "response_type": "json",
+        "async": true
+      }
+    }
+  ],
+  "responses": [
+    {
+      "status": 202,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "Location": "/instant-snap/v1/captures/3f6c2a1e-9b8d-4c7e-a5f4-1d2e3c4b5a69"
+      },
+      "body": {
+        "success": true,
+        "id": "3f6c2a1e-9b8d-4c7e-a5f4-1d2e3c4b5a69",
+        "status": "queued",
+        "response_type": "json",
+        "media_category": "image",
+        "format": "png",
+        "content_type": "image/png",
+        "size_bytes": null,
+        "width": null,
+        "height": null,
+        "duration_ms": null,
+        "page_http_status": null,
+        "captured_at": null,
+        "final_url": null,
+        "media_sha256": null,
+        "download_url": null,
+        "expires_at": null,
+        "page_source": null,
+        "s3_delivery": null,
+        "callback_url": null,
+        "error_code": null,
+        "spec_version": "v1"
+      }
+    }
+  ],
+  "expect": {
+    "result": {
+      "id": "3f6c2a1e-9b8d-4c7e-a5f4-1d2e3c4b5a69",
+      "status": "queued"
+    }
+  }
+}

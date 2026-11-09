@@ -1,0 +1,50 @@
+name: Check
+
+# Every JSON file must parse, and the two API descriptions must match what production serves, so a change to the
+# API that never reached this repository is noticed within a week.
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+
+      - name: Every JSON file parses
+        run: |
+          find . -name '*.json' -not -path './.git/*' -print0 |
+            xargs -0 -n1 node -e 'JSON.parse(require("node:fs").readFileSync(process.argv[1], "utf8"))'
+
+      - name: The playback server starts
+        run: |
+          node conformance/server.js > server.log &
+          for i in $(seq 1 50); do grep -q "listening on" server.log && break; sleep 0.1; done
+          grep "listening on" server.log
+
+      - name: The API descriptions match production
+        run: |
+          check() {
+            curl -fsS "$2" -o live.json
+            node -e '
+              const fs = require("node:fs");
+              const [ours, live] = process.argv.slice(1).map((f) => JSON.parse(fs.readFileSync(f, "utf8")));
+              if (JSON.stringify(ours) !== JSON.stringify(live)) {
+                console.error(process.argv[1] + " differs from what production serves; update it from there.");
+                process.exit(1);
+              }' "$1" live.json
+          }
+          check instant-snap.openapi.json https://api.websitescreenshotworld.com/instant-snap/v1/openapi.json
+          check auto-schedule.openapi.json https://autoapi.websitescreenshotworld.com/auto-schedule/v1/openapi.json

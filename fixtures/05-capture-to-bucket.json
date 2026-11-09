@@ -1,0 +1,86 @@
+{
+  "name": "capture_to_bucket",
+  "description": "cloud_storage: s3_delivery goes on the wire, including the secret.",
+  "call": {
+    "product": "instant_snap",
+    "method": "capture_to_bucket",
+    "options": {
+      "url": "https://example.com",
+      "s3_delivery": {
+        "access_key_id": "AKIAEXAMPLE000000000",
+        "secret_access_key": "example-secret",
+        "bucket": "captures",
+        "region": "eu-west-2",
+        "key_prefix": "site/"
+      }
+    }
+  },
+  "expect_requests": [
+    {
+      "method": "POST",
+      "path": "/instant-snap/v1/captures",
+      "headers": {
+        "X-Api-Key": "wsw_api_000000000000_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "Content-Type": "application/json"
+      },
+      "idempotency_key": "present",
+      "body": {
+        "url": "https://example.com",
+        "s3_delivery": {
+          "access_key_id": "AKIAEXAMPLE000000000",
+          "secret_access_key": "example-secret",
+          "bucket": "captures",
+          "region": "eu-west-2",
+          "key_prefix": "site/"
+        },
+        "response_type": "cloud_storage"
+      }
+    }
+  ],
+  "responses": [
+    {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "success": true,
+        "id": "3f6c2a1e-9b8d-4c7e-a5f4-1d2e3c4b5a69",
+        "status": "succeeded",
+        "response_type": "cloud_storage",
+        "media_category": "image",
+        "format": "png",
+        "content_type": "image/png",
+        "size_bytes": 482113,
+        "width": 1920,
+        "height": 1080,
+        "duration_ms": 4210,
+        "page_http_status": 200,
+        "captured_at": "2026-09-26T10:30:04.512Z",
+        "final_url": null,
+        "media_sha256": "9f2c000000000000000000000000000000000000000000000000000000000000",
+        "download_url": null,
+        "expires_at": "2026-09-27T10:30:04.512Z",
+        "page_source": null,
+        "s3_delivery": {
+          "status": "in_progress",
+          "bucket": "captures",
+          "key": null,
+          "access_key_id": "0000",
+          "error": null
+        },
+        "callback_url": null,
+        "error_code": null,
+        "spec_version": "v1"
+      }
+    }
+  ],
+  "expect": {
+    "result": {
+      "s3_delivery": {
+        "status": "in_progress",
+        "bucket": "captures"
+      }
+    }
+  }
+}

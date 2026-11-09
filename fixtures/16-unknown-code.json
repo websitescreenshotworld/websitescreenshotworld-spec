@@ -1,0 +1,47 @@
+{
+  "name": "unknown_code",
+  "description": "A code this client does not know raises the base error.",
+  "call": {
+    "product": "instant_snap",
+    "method": "capture",
+    "options": {
+      "url": "https://example.com"
+    }
+  },
+  "expect_requests": [
+    {
+      "method": "POST",
+      "path": "/instant-snap/v1/captures",
+      "headers": {
+        "X-Api-Key": "wsw_api_000000000000_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "Content-Type": "application/json"
+      },
+      "idempotency_key": "same",
+      "body": {
+        "url": "https://example.com",
+        "response_type": "json"
+      }
+    }
+  ],
+  "responses": [
+    {
+      "status": 422,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "success": false,
+        "error_code": "something_new",
+        "error_message": "A future refusal.",
+        "retry_after_seconds": null
+      }
+    }
+  ],
+  "expect": {
+    "error": {
+      "kind": "base",
+      "error_code": "something_new",
+      "http_status": 422
+    }
+  }
+}
