@@ -15,12 +15,14 @@
       "quota_exhausted",
       "feature_not_available",
       "no_trigger_allowance",
-      "forbidden"
+      "forbidden",
+      "webhook_endpoint_limit_reached"
     ],
     "not_found": [
       "capture_not_found",
       "web_page_not_found",
-      "not_found"
+      "not_found",
+      "webhook_endpoint_not_found"
     ],
     "rate_limit": [
       "rate_limited",

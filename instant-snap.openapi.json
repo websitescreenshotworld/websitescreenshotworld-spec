@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Instant Snap API",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "Capture a web page on demand: an image, a video, a PDF or the page's readable text as markdown, returned in the response, as a download link, or uploaded to your own bucket.",
     "contact": {
       "email": "support@websitescreenshotworld.com"
@@ -420,6 +420,343 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/instant-snap/v1/webhook-endpoints": {
+      "get": {
+        "operationId": "listWebhookEndpoints",
+        "summary": "List webhook endpoints",
+        "description": "Every webhook endpoint of the key's organization, whoever added it. Takes an Instant Snap key; the same list is managed with an Auto Schedule key at /auto-schedule/v1/webhook-endpoints.",
+        "responses": {
+          "200": {
+            "description": "The endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookEndpointList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Bad key. Codes: `api_key_invalid`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Codes: `rate_limited`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A service is down; retry after the hint. Codes: `service_unavailable`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createWebhookEndpoint",
+        "summary": "Add a webhook endpoint",
+        "description": "Adds an endpoint to the organization, for an integration that registers its own webhook (n8n, Zapier, Make). It gets a signing secret of its own, returned only in this answer. An organization can have 25 endpoints. Takes an Instant Snap key; the same list is managed with an Auto Schedule key at /auto-schedule/v1/webhook-endpoints.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookEndpointCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Added. Store `signing_secret` now.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookEndpointCreated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The URL cannot receive webhooks, or an event or product is not known. Codes: `validation_failed`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such schedule for `web_page_id`. Codes: `web_page_not_found`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The organization already has 25 endpoints. Codes: `webhook_endpoint_limit_reached`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Bad key. Codes: `api_key_invalid`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Codes: `rate_limited`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A service is down; retry after the hint. Codes: `service_unavailable`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/instant-snap/v1/webhook-endpoints/{id}": {
+      "get": {
+        "operationId": "getWebhookEndpoint",
+        "summary": "Read a webhook endpoint",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookEndpoint"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such endpoint in the key's organization. Codes: `webhook_endpoint_not_found`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Bad key. Codes: `api_key_invalid`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Codes: `rate_limited`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A service is down; retry after the hint. Codes: `service_unavailable`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteWebhookEndpoint",
+        "summary": "Delete a webhook endpoint",
+        "description": "Nothing more is posted to it. Deliveries already in the log stay there.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookEndpointDeleted"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such endpoint in the key's organization. Codes: `webhook_endpoint_not_found`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Bad key. Codes: `api_key_invalid`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Codes: `rate_limited`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A service is down; retry after the hint. Codes: `service_unavailable`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait.",
+                "schema": {
+                  "type": "integer"
                 }
               }
             }
@@ -1241,6 +1578,298 @@
               "integer",
               "null"
             ]
+          }
+        }
+      },
+      "WebhookEventName": {
+        "type": "string",
+        "enum": [
+          "capture.succeeded",
+          "capture.failed",
+          "capture.changed",
+          "delivery.completed",
+          "schedule.paused",
+          "sitemap_run.completed"
+        ]
+      },
+      "WebhookEndpoint": {
+        "type": "object",
+        "description": "A webhook endpoint of the key's organization. The same list the app shows under Developer Tools, Webhooks. Never carries a secret.",
+        "required": [
+          "success",
+          "id",
+          "name",
+          "url",
+          "events",
+          "product",
+          "web_page_id",
+          "is_enabled",
+          "has_own_secret",
+          "disabled_reason",
+          "last_delivery_at",
+          "last_status_code",
+          "created_at"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WebhookEventName"
+            }
+          },
+          "product": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "auto_schedule",
+              "instant_snap",
+              null
+            ],
+            "description": "Limited to one product's events; null for both."
+          },
+          "web_page_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Limited to one schedule's events; null for every schedule."
+          },
+          "is_enabled": {
+            "type": "boolean",
+            "description": "False once the endpoint was switched off, by its owner or after 20 failed deliveries in a row."
+          },
+          "has_own_secret": {
+            "type": "boolean",
+            "description": "True when deliveries are signed with this endpoint's own secret (created through this API); false when they are signed with the organization's secret (added in the app)."
+          },
+          "disabled_reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "last_delivery_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "last_status_code": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "WebhookEndpointItem": {
+        "type": "object",
+        "description": "A webhook endpoint of the key's organization. The same list the app shows under Developer Tools, Webhooks. Never carries a secret.",
+        "required": [
+          "id",
+          "name",
+          "url",
+          "events",
+          "product",
+          "web_page_id",
+          "is_enabled",
+          "has_own_secret",
+          "disabled_reason",
+          "last_delivery_at",
+          "last_status_code",
+          "created_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WebhookEventName"
+            }
+          },
+          "product": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "auto_schedule",
+              "instant_snap",
+              null
+            ],
+            "description": "Limited to one product's events; null for both."
+          },
+          "web_page_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Limited to one schedule's events; null for every schedule."
+          },
+          "is_enabled": {
+            "type": "boolean",
+            "description": "False once the endpoint was switched off, by its owner or after 20 failed deliveries in a row."
+          },
+          "has_own_secret": {
+            "type": "boolean",
+            "description": "True when deliveries are signed with this endpoint's own secret (created through this API); false when they are signed with the organization's secret (added in the app)."
+          },
+          "disabled_reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "last_delivery_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "last_status_code": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "WebhookEndpointList": {
+        "type": "object",
+        "required": [
+          "success",
+          "items"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WebhookEndpointItem"
+            }
+          }
+        }
+      },
+      "WebhookEndpointCreate": {
+        "type": "object",
+        "required": [
+          "url",
+          "events"
+        ],
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2048,
+            "description": "Where to post: a public https address."
+          },
+          "events": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/WebhookEventName"
+            }
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 128,
+            "description": "What the endpoint is called in the app. Default: \"Added through the API\"."
+          },
+          "product": {
+            "type": "string",
+            "enum": [
+              "auto_schedule",
+              "instant_snap"
+            ],
+            "description": "Take only this product's events. Leave out for both."
+          },
+          "web_page_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Take only this schedule's events."
+          }
+        }
+      },
+      "WebhookEndpointCreated": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WebhookEndpoint"
+          },
+          {
+            "type": "object",
+            "required": [
+              "signing_secret"
+            ],
+            "properties": {
+              "signing_secret": {
+                "type": "string",
+                "description": "The secret deliveries to this endpoint are signed with (X-WSW-Signature). Returned only here: store it now. Starts with whsec_."
+              }
+            }
+          }
+        ]
+      },
+      "WebhookEndpointDeleted": {
+        "type": "object",
+        "required": [
+          "success",
+          "id",
+          "deleted"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "deleted": {
+            "type": "boolean",
+            "const": true
           }
         }
       }
