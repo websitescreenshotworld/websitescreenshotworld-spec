@@ -32,6 +32,7 @@
       "body": {
         "success": true,
         "id": "3f6c2a1e-9b8d-4c7e-a5f4-1d2e3c4b5a69",
+        "url": "https://example.com",
         "status": "succeeded",
         "response_type": "json",
         "media_category": "image",
@@ -58,6 +59,7 @@
   "expect": {
     "result": {
       "id": "3f6c2a1e-9b8d-4c7e-a5f4-1d2e3c4b5a69",
+      "url": "https://example.com",
       "status": "succeeded",
       "format": "png",
       "width": 1920,

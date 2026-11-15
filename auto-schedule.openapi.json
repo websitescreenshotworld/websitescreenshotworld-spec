@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Auto Schedule API",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "Start a scheduled web page's capture now. Results arrive by webhook (capture.succeeded, capture.failed, delivery.completed, capture.changed, sitemap_run.completed).",
     "contact": {
       "email": "support@websitescreenshotworld.com"
@@ -256,6 +256,16 @@
           },
           "401": {
             "description": "Bad key. Codes: `api_key_invalid`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The plan has no webhooks (the free trial). Codes: `feature_not_available`.",
             "content": {
               "application/json": {
                 "schema": {
