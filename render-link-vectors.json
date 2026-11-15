@@ -1,0 +1,90 @@
+{
+  "description": "Render links every client's build() must produce exactly. `options` uses the API's own names; each library passes them in its own casing. `format` defaults to png and `base_url` to https://api.websitescreenshotworld.com when a case leaves them out.",
+  "cases": [
+    {
+      "name": "minimal",
+      "render_secret": "wsw_rsk_fixture-secret-not-for-production-000000000000",
+      "key_prefix": "0123456789ab",
+      "options": {
+        "url": "https://example.com"
+      },
+      "canonical": "/instant-snap/v1/render/0123456789ab/png?url=https%3A%2F%2Fexample.com",
+      "signature": "c0049e230378ff6fb781e2fae82c5e8f6cc8e580a441264cf256079509323f85",
+      "url": "https://api.websitescreenshotworld.com/instant-snap/v1/render/0123456789ab/png?url=https%3A%2F%2Fexample.com&sig=c0049e230378ff6fb781e2fae82c5e8f6cc8e580a441264cf256079509323f85"
+    },
+    {
+      "name": "format_and_ttl",
+      "render_secret": "wsw_rsk_fixture-secret-not-for-production-000000000000",
+      "key_prefix": "0123456789ab",
+      "format": "jpeg",
+      "options": {
+        "url": "https://example.com/pricing",
+        "ttl": 3600
+      },
+      "canonical": "/instant-snap/v1/render/0123456789ab/jpeg?ttl=3600&url=https%3A%2F%2Fexample.com%2Fpricing",
+      "signature": "67ae3c331cdb0960869e56ac12fd63d6071c3fd2f0b2173f97768028f06d37f9",
+      "url": "https://api.websitescreenshotworld.com/instant-snap/v1/render/0123456789ab/jpeg?ttl=3600&url=https%3A%2F%2Fexample.com%2Fpricing&sig=67ae3c331cdb0960869e56ac12fd63d6071c3fd2f0b2173f97768028f06d37f9"
+    },
+    {
+      "name": "every_option",
+      "render_secret": "wsw_rsk_fixture-secret-not-for-production-000000000000",
+      "key_prefix": "a1b2c3d4e5f6",
+      "format": "webp",
+      "options": {
+        "url": "https://example.com/a b?x=1&y=ü",
+        "ttl": 604800,
+        "width": 1280,
+        "height": 720,
+        "device_scale_factor": 1.5,
+        "device_category": "mobile",
+        "emulated_device": "iPhone 15",
+        "scroll_mode": "scroll",
+        "auto_height": true,
+        "max_height": 5000,
+        "zoom": 90,
+        "block_ads": false,
+        "block_pop_ups": true,
+        "press_escape": true,
+        "page_timeout_ms": 20000,
+        "scrolling_delay_ms": 300,
+        "locale": "en-GB",
+        "time_zone": "Europe/London",
+        "hide": "#cookie-banner, .ad",
+        "xpath": "//main",
+        "click": "#accept",
+        "hover": "nav > a",
+        "country": "gb",
+        "thumb_width": 400
+      },
+      "canonical": "/instant-snap/v1/render/a1b2c3d4e5f6/webp?auto_height=true&block_ads=false&block_pop_ups=true&click=%23accept&country=gb&device_category=mobile&device_scale_factor=1.5&emulated_device=iPhone%2015&height=720&hide=%23cookie-banner%2C%20.ad&hover=nav%20%3E%20a&locale=en-GB&max_height=5000&page_timeout_ms=20000&press_escape=true&scroll_mode=scroll&scrolling_delay_ms=300&thumb_width=400&time_zone=Europe%2FLondon&ttl=604800&url=https%3A%2F%2Fexample.com%2Fa%20b%3Fx%3D1%26y%3D%C3%BC&width=1280&xpath=%2F%2Fmain&zoom=90",
+      "signature": "2c17b16484deafdd3a10387a9a51581548959095ab4c23dbdfa2a9ebbf661982",
+      "url": "https://api.websitescreenshotworld.com/instant-snap/v1/render/a1b2c3d4e5f6/webp?auto_height=true&block_ads=false&block_pop_ups=true&click=%23accept&country=gb&device_category=mobile&device_scale_factor=1.5&emulated_device=iPhone%2015&height=720&hide=%23cookie-banner%2C%20.ad&hover=nav%20%3E%20a&locale=en-GB&max_height=5000&page_timeout_ms=20000&press_escape=true&scroll_mode=scroll&scrolling_delay_ms=300&thumb_width=400&time_zone=Europe%2FLondon&ttl=604800&url=https%3A%2F%2Fexample.com%2Fa%20b%3Fx%3D1%26y%3D%C3%BC&width=1280&xpath=%2F%2Fmain&zoom=90&sig=2c17b16484deafdd3a10387a9a51581548959095ab4c23dbdfa2a9ebbf661982"
+    },
+    {
+      "name": "whole_number_scale_factor_and_custom_base_url",
+      "render_secret": "wsw_rsk_another-fixture-secret-0000000000000000000000",
+      "key_prefix": "ffffffffffff",
+      "format": "png",
+      "base_url": "https://api.example.test/",
+      "options": {
+        "url": "https://example.com",
+        "device_scale_factor": 2.0
+      },
+      "canonical": "/instant-snap/v1/render/ffffffffffff/png?device_scale_factor=2&url=https%3A%2F%2Fexample.com",
+      "signature": "ab2afa9c80fd1498cdde84392e77927898b72f423db79bba08f1c61fcb653cdd",
+      "url": "https://api.example.test/instant-snap/v1/render/ffffffffffff/png?device_scale_factor=2&url=https%3A%2F%2Fexample.com&sig=ab2afa9c80fd1498cdde84392e77927898b72f423db79bba08f1c61fcb653cdd"
+    },
+    {
+      "name": "reserved_characters",
+      "render_secret": "wsw_rsk_fixture-secret-not-for-production-000000000000",
+      "key_prefix": "0123456789ab",
+      "options": {
+        "url": "https://example.com/?q=it's (a) test*!",
+        "hide": "a[href*='x'] ~ b"
+      },
+      "canonical": "/instant-snap/v1/render/0123456789ab/png?hide=a%5Bhref%2A%3D%27x%27%5D%20~%20b&url=https%3A%2F%2Fexample.com%2F%3Fq%3Dit%27s%20%28a%29%20test%2A%21",
+      "signature": "6d188689e964b284203f5f31d2c3c84a0abe2ef7d83d0fd6416216870d40e317",
+      "url": "https://api.websitescreenshotworld.com/instant-snap/v1/render/0123456789ab/png?hide=a%5Bhref%2A%3D%27x%27%5D%20~%20b&url=https%3A%2F%2Fexample.com%2F%3Fq%3Dit%27s%20%28a%29%20test%2A%21&sig=6d188689e964b284203f5f31d2c3c84a0abe2ef7d83d0fd6416216870d40e317"
+    }
+  ]
+}

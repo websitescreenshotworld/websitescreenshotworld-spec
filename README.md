@@ -16,6 +16,7 @@ as a git submodule at `spec/`, fixed to one commit, so a change here reaches a l
 | `fixtures/` | Request and response pairs every library must handle identically (see below) |
 | `events/` | One example of every webhook event |
 | `webhook-vectors.json` | Signature cases every `verify` must agree with |
+| `render-link-vectors.json` | Render links every `build` must produce exactly (see *Render links*) |
 | `conformance/server.js` | The playback server every library's tests run the fixtures against (see below); `conformance/package.json` keeps it CommonJS inside an ES-module package such as the Node.js library |
 
 ## The client
@@ -50,6 +51,7 @@ Operations, named in each language's own style:
 | Auto Schedule `trigger_now(web_page_id)` | `POST /auto-schedule/v1/web-pages/{id}/trigger-now` | the trigger result |
 | Instant Snap `account()` / Auto Schedule `account()` | `GET /instant-snap/v1/account` / `GET /auto-schedule/v1/account` | whose key it is: `key_name`, `key_prefix`, `product`, `email` (`key_name` and `email` may be null) |
 | `Webhook.verify(body, signature_header, secret, tolerance)` | none | the typed event, or a signature error |
+| `RenderLink.build(render_secret, key_prefix, url, format, options)` | none | a signed render link, as a string |
 
 The five capture operations set `response_type` themselves, and the two `submit` operations set `async: true`;
 neither is an option the caller passes.
@@ -145,6 +147,47 @@ pointed. Neither the API nor a download link redirects, so a `3xx` answer is rai
 `fallback_by_status` code. Python follows a redirect only for the download link, which carries no key; the other
 libraries follow none. Where the caller passes in an HTTP client of their own, the README says how to switch its
 redirects off, and the libraries that can tell an answer came through a redirect (.NET, Java) refuse it.
+
+## Render links
+
+A render link is a signed `GET` URL that is itself a screenshot, for an `<img>` tag, an email or a social preview:
+
+```
+https://api.websitescreenshotworld.com/instant-snap/v1/render/{key_prefix}/{format}?{parameters}&sig={signature}
+```
+
+`RenderLink.build` makes one locally - it sends nothing and needs no client or API key. It takes the key's
+**render secret** (`wsw_rsk_…`, shown on the dashboard's API Keys page once render links are on for the key), the
+key's 12-character **key prefix**, the page `url`, the `format` (`png`, `jpeg` or `webp`; default `png`), an optional
+`base_url` (default the Instant Snap base URL) and these options, all optional, in the language's own casing:
+
+| Option | Value |
+|---|---|
+| `ttl` | seconds a capture of the link is served from cache, 3600 to 2592000; the server uses 86400 when it is left out |
+| `width`, `height`, `device_scale_factor` | the browser viewport |
+| `device_category`, `emulated_device`, `scroll_mode`, `auto_height`, `max_height`, `zoom` | as for a capture |
+| `block_ads`, `block_pop_ups`, `press_escape`, `page_timeout_ms`, `scrolling_delay_ms`, `locale`, `time_zone` | as for a capture |
+| `hide`, `xpath`, `click`, `hover` | the capture's `selectors` |
+| `country` | the capture's `proxy.country` |
+| `thumb_width` | shrink the image to this width after the capture (16 to 3840), keeping its proportions |
+
+Headers, cookies, cloud delivery, callbacks and async have no render-link form. An option that is not set is not
+sent.
+
+**Signing.** Every parameter but `sig` is written as `name=value`: booleans as `true` / `false`, integers in
+decimal, `device_scale_factor` in its shortest decimal form (`2`, not `2.0`; `1.5`), strings as given. Names and
+values are percent-encoded per RFC 3986 - every UTF-8 byte except `A-Z a-z 0-9 - . _ ~`, upper-case hex, a space as
+`%20` (so `encodeURIComponent` alone is not enough: it leaves `! ' ( ) *`). The pairs are sorted by encoded name,
+joined with `&`, and appended to `/instant-snap/v1/render/{key_prefix}/{format}?` to make the canonical string.
+The signature is HMAC-SHA256 of the canonical string's UTF-8 bytes, keyed with the UTF-8 bytes of the whole render
+secret, as lower-case hex. The link is `base_url`, then the canonical string, then `&sig=` and the signature, so the
+query a library writes is exactly the one it signed.
+
+`build` refuses (with the language's argument error) a missing render secret, key prefix or `url`, a key prefix
+that is not 12 lower-case hex characters, and a format other than the three. The server checks everything else:
+a link it cannot use answers with the JSON error envelope, and a view it cannot capture shows a placeholder image.
+`render-link-vectors.json` holds the cases every library is tested against; the server is tested against the same
+ones.
 
 ## Webhooks
 
