@@ -1,0 +1,40 @@
+{
+  "name": "account_auto_schedule",
+  "description": "The same with an Auto Schedule key (Auto Schedule API 1.3.0); a key with no name and a creator who has left answer null.",
+  "call": {
+    "product": "auto_schedule",
+    "method": "account"
+  },
+  "expect_requests": [
+    {
+      "method": "GET",
+      "path": "/auto-schedule/v1/account",
+      "headers": {
+        "X-Api-Key": "wsw_autoapi_000000000000_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+      }
+    }
+  ],
+  "responses": [
+    {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "success": true,
+        "key_name": null,
+        "key_prefix": "000000000000",
+        "product": "auto_schedule",
+        "email": null
+      }
+    }
+  ],
+  "expect": {
+    "result": {
+      "key_name": null,
+      "key_prefix": "000000000000",
+      "product": "auto_schedule",
+      "email": null
+    }
+  }
+}

@@ -48,6 +48,7 @@ Operations, named in each language's own style:
 | Instant Snap `defaults()` | `GET /instant-snap/v1/defaults` | the default set (no key needed) |
 | Instant Snap `catalog()` | `GET /instant-snap/v1/catalog` | devices and proxy countries |
 | Auto Schedule `trigger_now(web_page_id)` | `POST /auto-schedule/v1/web-pages/{id}/trigger-now` | the trigger result |
+| Instant Snap `account()` / Auto Schedule `account()` | `GET /instant-snap/v1/account` / `GET /auto-schedule/v1/account` | whose key it is: `key_name`, `key_prefix`, `product`, `email` (`key_name` and `email` may be null) |
 | `Webhook.verify(body, signature_header, secret, tolerance)` | none | the typed event, or a signature error |
 
 The five capture operations set `response_type` themselves, and the two `submit` operations set `async: true`;
