@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Instant Snap API",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "description": "Capture a web page on demand: an image, a video, a PDF or the page's readable text as markdown, returned in the response, as a download link, or uploaded to your own bucket.",
     "contact": {
       "email": "support@websitescreenshotworld.com"
@@ -721,6 +721,71 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Bad key. Codes: `api_key_invalid`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Codes: `rate_limited`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A service is down; retry after the hint. Codes: `service_unavailable`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/instant-snap/v1/account": {
+      "get": {
+        "operationId": "getAccount",
+        "summary": "Whose key this is",
+        "description": "The name you gave this Instant Snap key, its public prefix, its product and the email of the member who created it. Integrations show it to tell one connected account from another (Zapier's connection label), and you can call it to check a key without spending a capture. Never returns the key itself and counts towards no allowance. An Auto Schedule key answers the same at /auto-schedule/v1/account.",
+        "responses": {
+          "200": {
+            "description": "Whose key this is.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
                 }
               }
             }
@@ -1889,6 +1954,61 @@
           "deleted": {
             "type": "boolean",
             "const": true
+          }
+        }
+      },
+      "Account": {
+        "type": "object",
+        "required": [
+          "success",
+          "key_name",
+          "key_prefix",
+          "product",
+          "email"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": true
+          },
+          "key_name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The name you gave the key under Developer Tools, API Keys.",
+            "examples": [
+              "Zapier"
+            ]
+          },
+          "key_prefix": {
+            "type": "string",
+            "description": "The key's public prefix, as the app shows it beside the name. Not enough to use the key.",
+            "examples": [
+              "0123456789ab"
+            ]
+          },
+          "product": {
+            "type": "string",
+            "enum": [
+              "instant_snap",
+              "auto_schedule"
+            ],
+            "description": "The product the key belongs to.",
+            "examples": [
+              "instant_snap"
+            ]
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "email",
+            "description": "The member who created the key; null when they are no longer a member.",
+            "examples": [
+              "you@example.com"
+            ]
           }
         }
       }
