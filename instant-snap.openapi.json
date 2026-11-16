@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Instant Snap API",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "description": "Capture a web page on demand: an image, a video, a PDF or the page's readable text as markdown, returned in the response, as a download link, or uploaded to your own bucket.",
     "contact": {
       "email": "support@websitescreenshotworld.com"
@@ -832,6 +832,416 @@
                 "description": "Seconds to wait.",
                 "schema": {
                   "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/instant-snap/v1/render/{key_prefix}/{format}": {
+      "get": {
+        "operationId": "getRenderLink",
+        "summary": "A render link: a signed URL that is itself a screenshot",
+        "security": [],
+        "description": "For an `<img>` tag, an email or a social preview, which cannot send `X-Api-Key`: the link carries a signature made with the key's render secret, so nobody can change the page or the options in it. Sign links on your server; never put the render secret in a page. A view answers with the capture of this exact link while it is younger than `ttl` (free, `X-InstantSnap-Render: stored`); otherwise it makes one ordinary capture (`captured`), counted like any other. When there is nothing to show yet it answers `200` with a small placeholder image instead, cached for seconds: `preparing` (a capture is running or could not start; 10 s), `limit_reached` (no captures left; 60 s) or `failed` (the page could not be captured; 60 s). At most 60 new captures a minute go through render links per organization; past that, views get `preparing`. Only the options listed here exist; headers, cookies, S3 delivery, callbacks and async have no render-link form. Included in the Pro, Business and Business Plus plans.",
+        "parameters": [
+          {
+            "name": "key_prefix",
+            "in": "path",
+            "required": true,
+            "description": "The 12 characters after `wsw_api_` in the Instant Snap key whose render secret signs the link. Render links must be turned on for that key (dashboard, API Keys, Render links).",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "format",
+            "in": "path",
+            "required": true,
+            "description": "The image format.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "png",
+                "jpeg",
+                "webp"
+              ]
+            }
+          },
+          {
+            "name": "url",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uri",
+              "maxLength": 2048
+            },
+            "description": "The page to capture. Absolute http or https, no credentials in the URL."
+          },
+          {
+            "name": "ttl",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 3600,
+              "maximum": 2592000,
+              "default": 86400
+            },
+            "description": "Seconds a capture of this link is served, to every view, before a view captures again. Also the `Cache-Control` max-age."
+          },
+          {
+            "name": "thumb_width",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 16,
+              "maximum": 3840
+            },
+            "description": "Shrink the image to this width after the capture, keeping its proportions."
+          },
+          {
+            "name": "width",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 250,
+              "maximum": 7680,
+              "default": 1920
+            },
+            "description": "Viewport width in CSS pixels."
+          },
+          {
+            "name": "height",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 250,
+              "maximum": 7680,
+              "default": 1080
+            },
+            "description": "Viewport height in CSS pixels."
+          },
+          {
+            "name": "device_scale_factor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 3,
+              "default": 1
+            },
+            "description": "Device pixel ratio."
+          },
+          {
+            "name": "device_category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "desktop",
+                "mobile"
+              ],
+              "default": "desktop"
+            }
+          },
+          {
+            "name": "emulated_device",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A device from the catalog, case-insensitive. Defaults to \"iPhone 13\" when `device_category` is mobile."
+          },
+          {
+            "name": "scroll_mode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "viewport",
+                "scroll"
+              ],
+              "default": "viewport"
+            },
+            "description": "`scroll` captures the full page. Video defaults to `scroll`."
+          },
+          {
+            "name": "auto_height",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "max_height",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 250,
+              "maximum": 100000
+            },
+            "description": "Refused, not lowered, above the format ceiling (WebP 16383 ÷ scale factor, JPEG 65500)."
+          },
+          {
+            "name": "zoom",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 50,
+              "maximum": 100,
+              "default": 100
+            },
+            "description": "Percent. Applied to a desktop video only (`media_category` `video` without an emulated device); any other value than 100 on another capture is refused with `validation_failed`."
+          },
+          {
+            "name": "block_ads",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          {
+            "name": "block_pop_ups",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          {
+            "name": "press_escape",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Press the Escape key after the pop-up pass and again after scrolling (once in a video), for a modal that closes on Escape."
+          },
+          {
+            "name": "page_timeout_ms",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1000,
+              "maximum": 60000,
+              "default": 30000
+            }
+          },
+          {
+            "name": "scrolling_delay_ms",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000,
+              "default": 500
+            },
+            "description": "How long to pause after each scroll step of a full-page capture. Ignored for a viewport capture."
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "description": "BCP 47."
+          },
+          {
+            "name": "time_zone",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "description": "IANA time zone."
+          },
+          {
+            "name": "hide",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 2000
+            },
+            "description": "Up to 25 comma-separated CSS selectors (an XPath starting with // works too) of elements to hide before capturing. Each is applied on its own; one the browser rejects is skipped."
+          },
+          {
+            "name": "xpath",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "description": "Capture only the element this XPath selects."
+          },
+          {
+            "name": "click",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "description": "CSS selector of an element to click before capturing."
+          },
+          {
+            "name": "hover",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "description": "CSS selector of an element to hover before capturing."
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "description": "A country from `GET /instant-snap/v1/catalog` `proxy_countries`. Requires the ProxyLocation plan feature. Without this block the capture still goes out through a proxy, in the default location."
+          },
+          {
+            "name": "sig",
+            "in": "query",
+            "required": true,
+            "description": "Lower-case hex HMAC-SHA256, keyed with the whole render secret (`wsw_rsk_…`), of the canonical string: `/instant-snap/v1/render/{key_prefix}/{format}?` followed by every other parameter as `name=value`, names and values percent-encoded per RFC 3986 (everything but `A-Z a-z 0-9 - . _ ~`, upper-case hex), sorted by encoded name and joined with `&`. Booleans are `true`/`false`, numbers in their shortest form. Every client library builds links (`RenderLink`), and render-link-vectors.json in the spec repository has examples to test against. Put it last in the link.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The image - the capture, or a placeholder (see `X-InstantSnap-Render`).",
+            "headers": {
+              "Cache-Control": {
+                "description": "`public, max-age=<seconds>`: what remains of `ttl` for a capture, or the placeholder's few seconds.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-InstantSnap-Render": {
+                "description": "Which answer this is.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "stored",
+                    "captured",
+                    "preparing",
+                    "limit_reached",
+                    "failed"
+                  ]
+                }
+              },
+              "X-InstantSnap-Id": {
+                "description": "The capture's id, on `stored` and `captured`.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            },
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "contentMediaType": "application/octet-stream"
+                }
+              },
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "contentMediaType": "application/octet-stream"
+                }
+              },
+              "image/webp": {
+                "schema": {
+                  "type": "string",
+                  "contentMediaType": "application/octet-stream"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The link is not one: an unknown or repeated option, a value out of range, an option the capture refuses. Codes: `validation_failed`.",
+            "headers": {
+              "Cache-Control": {
+                "description": "`public, max-age=60`.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The signature does not match, or the key is unknown, revoked or has render links turned off. Codes: `api_key_invalid`.",
+            "headers": {
+              "Cache-Control": {
+                "description": "`public, max-age=60`.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The plan does not include render links. Codes: `feature_not_available`.",
+            "headers": {
+              "Cache-Control": {
+                "description": "`public, max-age=60`.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
